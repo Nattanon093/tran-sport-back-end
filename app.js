@@ -94,6 +94,8 @@ app.listen(port, () => {
 })
 
 var appRouteAuthen = require('./routes/appRoutesAuthen');
+var appRouteUsers = require('./routes/appRoutesUsers');
 // set routes
 
 appRouteAuthen(app);
+appRouteUsers(app);

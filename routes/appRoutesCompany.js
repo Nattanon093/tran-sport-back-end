@@ -1,12 +1,10 @@
-var BillController = require('../controllers/BillController');
-var bill_model = require('../models/BillModels');
-
-// generateBillNo
+var CompanyController = require('../controllers/CompanyController');
+var company_model = require('../models/CompanyModels');
 
 module.exports = function (app) {
     const key = '/api/v1';
-    app.get(`${key}/bill/generateBillNo`, function (req, res) {
-        BillController.generateBillNo(req.body, function (err, task) {
+    app.get(`${key}/company/getCompany`, function (req, res) {
+        CompanyController.getCompany(req.body, function (err, task) {
             try {
                 if (err) {
                     return res.send(err);
@@ -18,4 +16,3 @@ module.exports = function (app) {
         });
     });
 }
-

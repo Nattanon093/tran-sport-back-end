@@ -7,7 +7,6 @@ Task.generateBillNo = function generateBillNo(data, result) {
     return new Promise(function (resolve, reject) {
         var sql = "SELECT * FROM tb_invoice";
         client.query(sql, function (err, res) {
-            console.log("res :", res);
             let bill_no = '';
             if (res.rowCount > 0) {
                 let last_bill_no = res.rows[0].bill_no;

@@ -12,7 +12,6 @@ Task.getAuthen = async function getAuthen(data, result) {
 
 Task.login = async function login(data, result) {
     var response = await AuthenModel.login(data);
-    console.log('login response', response);
     result(response);
 };
 

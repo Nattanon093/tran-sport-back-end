@@ -3,18 +3,28 @@ var users_model = require('../models/UsersModels');
 
 module.exports = function (app) {
     const key = '/api/v1';
-    // getUsersByUserId
-    app.get(`${key}/users/getUsersByUserId`, function (req, res) {
-        console.log('appRoutesUsers.js app.get /users/getUsersByUserId');
-        UsersController.getUsersByUserId(req.body, function (err, task) {
-            console.log("task :", task);
+
+    // getUsers
+    app.get(`${key}/users/getUsers`, function (req, res) {
+        UsersController.getUsers(req.body, function (err, task) {
             try {
                 if (err) {
-                    console.log("err :", err);
-                    console.log('appRoutesUsers.js app.get /users/getUsersByUserId err');
                     return res.send(err);
                 }
-                console.log('appRoutesUsers.js app.get /users/getUsersByUserId success');
+                return res.send(task);
+            } catch (error) {
+                return res.send(error);
+            }
+        });
+    });
+
+    // getUsersByUserId
+    app.get(`${key}/users/getUsersByUserId`, function (req, res) {
+        UsersController.getUsersByUserId(req.body, function (err, task) {
+            try {
+                if (err) {
+                    return res.send(err);
+                }
                 return res.send(task);
             } catch (error) {
                 return res.send(error);

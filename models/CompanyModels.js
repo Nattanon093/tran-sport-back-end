@@ -6,7 +6,6 @@ var Task = function (task) {
 Task.getCompany = function getCompany(data, result) {
     return new Promise(function (resolve, reject) {
         var sql = "SELECT id, company_name FROM tb_company WHERE active_flag = 'Y'";
-            console.log(sql);
         client.query(sql, function (err, res) {
             if (err) {
                 const require = {

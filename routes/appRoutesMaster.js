@@ -15,4 +15,30 @@ module.exports = function (app) {
             }
         });
     });
+
+    app.get(`${key}/master/getMasterBank`, function (req, res) {
+        MasterController.getMasterBank(req.body, function (err, task) {
+            try {
+                if (err) {
+                    return res.send(err);
+                }
+                return res.send(task);
+            } catch (error) {
+                return res.send(error);
+            }
+        });
+    });
+
+    app.get(`${key}/master/getMasterChequePaymentType`, function (req, res) {
+        MasterController.getMasterChequePaymentType(req.body, function (err, task) {
+            try {
+                if (err) {
+                    return res.send(err);
+                }
+                return res.send(task);
+            } catch (error) {
+                return res.send(error);
+            }
+        });
+    });
 }

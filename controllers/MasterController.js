@@ -9,4 +9,14 @@ Task.getMasterPaymentType = async function getMasterPaymentType(data, result) {
     result(response);
 };
 
+Task.getMasterBank = async function getMasterBank(data, result) {
+    var response = await MasterModel.getMasterBank(data);
+    result(response);
+};
+
+Task.getMasterChequePaymentType = async function getMasterChequePaymentType(data, result) {
+    var response = await MasterModel.getMasterChequePaymentType(data);
+    result(response);
+};
+
 module.exports = Task;

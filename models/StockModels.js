@@ -6,7 +6,7 @@ var Task = function (task) {
 
 Task.getStock = function getStock(data, result) {
     return new Promise(function (resolve, reject) {
-        var sql = "SELECT * FROM tb_stock";
+        var sql = "SELECT * FROM tb_stock ORDER BY id ASC";
         client.query(sql, function (err, res) {
             if (err) {
                 const require = {

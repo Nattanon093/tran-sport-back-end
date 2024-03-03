@@ -63,6 +63,9 @@ Task.getBill = function getBill(data, result) {
         tb_invoice.payment_id,
         tb_mas_payment.payment_name AS paymentName,
         tb_invoice.total,
+        tb_invoice.net_balance AS remaining,
+        tb_invoice.deposit,
+        tb_invoice.status_invoice AS status,
         tb_invoice.create_date AS billDate
     FROM
         tb_invoice

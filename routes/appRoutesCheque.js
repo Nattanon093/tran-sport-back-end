@@ -31,19 +31,19 @@ module.exports = function (app) {
         });
     });
 
-    // deleteBill
-    // app.delete(`${key}/bill/deleteBill`, function (req, res) {
-    //     BillController.deleteBill(req.body, function (err, task) {
-    //         try {
-    //             if (err) {
-    //                 return res.send(err);
-    //             }
-    //             return res.send(task);
-    //         } catch (error) {
-    //             return res.send(error);
-    //         }
-    //     });
-    // });
+    // deleteCheque
+    app.delete(`${key}/cheque/deleteCheque`, function (req, res) {
+        ChequeController.deleteCheque(req.body, function (err, task) {
+            try {
+                if (err) {
+                    return res.send(err);
+                }
+                return res.send(task);
+            } catch (error) {
+                return res.send(error);
+            }
+        });
+    });
 
     
 }

@@ -14,9 +14,9 @@ Task.createCheque = async function createCheque(data, result) {
     result(response);
 }
 
-// Task.deleteBill = async function deleteBill(data, result) {
-//     var response = await BillModel.deleteBill(data);
-//     result(response);
-// }
+Task.deleteCheque = async function deleteCheque(data, result) {
+    var response = await ChequeModel.deleteCheque(data);
+    result(response);
+}
 
 module.exports = Task;

@@ -9,6 +9,7 @@ Task.getCheque = function getCheque(data, result) {
     `select
     tc.id as id,
     tmb.bank_name as bank_name,
+    tmb.short_code as short_code,
     tc.cheque_number as cheque_number ,
     tc.payee_only as payee_only ,
     tc.cheque_issue_date as cheque_issue_date,
@@ -41,78 +42,6 @@ Task.getCheque = function getCheque(data, result) {
     client.end;
   });
 };
-
-// Task.getChequeById = function getChequeById(data, result) {
-//     return new Promise(function (resolve, reject) {
-//         var sql = "SELECT * FROM tb_invoice WHERE bill_no = '" + data.bill_no + "'";
-//         client.query(sql, function (err, res) {
-//             if (err) {
-//                 const require = {
-//                     data: [],
-//                     error: err,
-//                     query_result: false,
-//                 };
-//                 reject(require);
-//             } else {
-//                 const require = {
-//                     data: res.rows,
-//                     error: err,
-//                     query_result: true,
-//                 };
-//                 resolve(require);
-//             }
-//         });
-//         client.end;
-//     });
-// }
-
-// Task.getBillByCustomer = function getBillByCustomer(data, result) {
-//     return new Promise(function (resolve, reject) {
-//         var sql = "SELECT * FROM tb_invoice WHERE customer_id = '" + data.customer_id + "'";
-//         client.query(sql, function (err, res) {
-//             if (err) {
-//                 const require = {
-//                     data: [],
-//                     error: err,
-//                     query_result: false,
-//                 };
-//                 reject(require);
-//             } else {
-//                 const require = {
-//                     data: res.rows,
-//                     error: err,
-//                     query_result: true,
-//                 };
-//                 resolve(require);
-//             }
-//         });
-//         client.end;
-//     });
-// }
-
-// Task.getBillByDate = function getBillByDate(data, result) {
-//     return new Promise(function (resolve, reject) {
-//         var sql = "SELECT * FROM tb_invoice WHERE invoice_date BETWEEN '" + data.start_date + "' AND '" + data.end_date + "'";
-//         client.query(sql, function (err, res) {
-//             if (err) {
-//                 const require = {
-//                     data: [],
-//                     error: err,
-//                     query_result: false,
-//                 };
-//                 reject(require);
-//             } else {
-//                 const require = {
-//                     data: res.rows,
-//                     error: err,
-//                     query_result: true,
-//                 };
-//                 resolve(require);
-//             }
-//         });
-//         client.end;
-//     });
-// }
 
 Task.createCheque = function createCheque(data, result) {
   // console.log('createBill :', data);

@@ -30,7 +30,7 @@ Task.getMasterPaymentType = function (req, result) {
 
 Task.getMasterBank = function (req, result) {
     return new Promise(function (resolve, reject) {
-        var sql = "SELECT id, bank_name, active_flag FROM tb_mas_bank WHERE active_flag = 'Y' ORDER BY id";
+        var sql = "SELECT id, bank_name,short_code, active_flag FROM tb_mas_bank WHERE active_flag = 'Y' ORDER BY id";
         client.query(sql, function (err, res) {
             if (err) {
                 const require = {

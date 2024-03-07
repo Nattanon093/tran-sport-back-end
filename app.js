@@ -94,6 +94,18 @@ app.listen(port, () => {
 })
 
 var appRouteAuthen = require('./routes/appRoutesAuthen');
+var appRouteUsers = require('./routes/appRoutesUsers');
+var appRouteStock = require('./routes/appRoutesStock');
+var appRouteBill = require('./routes/appRoutesBill');
+var appRouteMaster = require('./routes/appRoutesMaster');
+var appRoutesCompany = require('./routes/appRoutesCompany');
+var appRouteCheque = require('./routes/appRoutesCheque');
 // set routes
 
 appRouteAuthen(app);
+appRouteUsers(app);
+appRouteStock(app);
+appRouteBill(app);
+appRouteMaster(app);
+appRoutesCompany(app);
+appRouteCheque(app);

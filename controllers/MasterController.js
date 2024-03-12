@@ -19,4 +19,10 @@ Task.getMasterChequePaymentType = async function getMasterChequePaymentType(data
     result(response);
 };
 
+Task.getMasterDocument = async function getMasterDocument(data, result) {
+    var response = await MasterModel.getMasterDocument(data);
+    result(response);
+};
+
+
 module.exports = Task;

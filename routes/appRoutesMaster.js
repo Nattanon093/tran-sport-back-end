@@ -41,4 +41,17 @@ module.exports = function (app) {
             }
         });
     });
+
+    app.get(`${key}/master/getMasterDocument`, function (req, res) {
+        MasterController.getMasterDocument(req.body, function (err, task) {
+            try {
+                if (err) {
+                    return res.send(err);
+                }
+                return res.send(task);
+            } catch (error) {
+                return res.send(error);
+            }
+        });
+    });
 }

@@ -21,7 +21,7 @@ Task.getCheque = function getCheque(data, result) {
     from tb_cheque tc 
     left join tb_mas_bank tmb on tmb.id = tc.bank_id and tmb.active_flag = 'Y'
     left join tb_mas_payment_type tmpt on tmpt.id = tc.cheque_payment_id  and tmpt.active_flag = 'Y'
-    where tc.active_flag = 'Y' ORDER BY tc.id`;
+    where tc.active_flag = 'Y' ORDER BY tc.id desc`;
     client.query(sql, function (err, res) {
       if (err) {
         const require = {
@@ -44,7 +44,6 @@ Task.getCheque = function getCheque(data, result) {
 };
 
 Task.createCheque = function createCheque(data, result) {
-  // console.log('createBill :', data);
 
   return new Promise(function (resolve, reject) {
     var sql = `insert

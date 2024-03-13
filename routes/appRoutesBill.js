@@ -32,9 +32,9 @@ module.exports = function (app) {
         });
     });
 
-    // getBillByBillNo
-    app.get(`${key}/bill/getBillByBillNo`, function (req, res) {
-        BillController.getBillByBillNo(req.body, function (err, task) {
+    // getBillByBillNo/:bill_no
+    app.get(`${key}/bill/getBillByBillNo/:bill_no`, function (req, res) {
+        BillController.getBillByBillNo(req.params, function (err, task) {
             try {
                 if (err) {
                     return res.send(err);
@@ -45,6 +45,7 @@ module.exports = function (app) {
             }
         });
     });
+    
 
     // getBillByCustomer
     app.get(`${key}/bill/getBillByCustomer`, function (req, res) {

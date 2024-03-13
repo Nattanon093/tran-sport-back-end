@@ -5,7 +5,7 @@ var Task = function (task) {
 
 Task.generateBillNo = function generateBillNo(data, result) {
     return new Promise(function (resolve, reject) {
-        var sql = "SELECT * FROM tb_invoice";
+        var sql = "SELECT bill_number FROM tb_invoice ORDER BY id DESC LIMIT 1";
         client.query(sql, function (err, res) {
             let bill_no = '';
             if (res?.rowCount > 0) {
@@ -82,8 +82,6 @@ Task.getBill = function getBill(data, result) {
     WHERE
      tb_invoice.active_flag = 'Y' ORDER BY tb_invoice.id DESC`;
         client.query(sql, function (err, res) {
-            console.log('err :', err);
-            console.log('res :', res.rows);
             if (err) {
                 const require = {
                     data: [],
@@ -107,6 +105,7 @@ Task.getBill = function getBill(data, result) {
 Task.getBillByBillNo = function getBillByBillNo(data, result) {
     return new Promise(function (resolve, reject) {
         var sql = `SELECT
+        tb_invoice.id AS billId,
         tb_customer.deceased_name AS deceased,
         tb_customer.contact_person AS contact,
         tb_customer.customer_address AS address,
@@ -118,8 +117,17 @@ Task.getBillByBillNo = function getBillByBillNo(data, result) {
         bill_number AS billNo,
         volume_no AS bookNo,
         user_id,
+        tb_users.nickname  || ' : ' ||tb_users.firstname || ' ' || tb_users.lastname AS billUser,
         payment_id,
-        total
+        tb_mas_payment.payment_name AS paymentName,
+        total,
+        net_balance AS remaining,
+        deposit,
+        price_after_discount AS priceAfterDiscount,
+        (total - price_after_discount) AS discount,
+        status_invoice AS status,
+        note,
+        remark
     FROM
         tb_invoice
     LEFT JOIN tb_customer ON
@@ -133,10 +141,10 @@ Task.getBillByBillNo = function getBillByBillNo(data, result) {
     LEFT JOIN tb_company ON
         tb_invoice.company_id = tb_company.id
     WHERE
-        tb_invoice.id = $1`;
+        tb_invoice.bill_number = $1`;
 
         client.query(sql, [
-            data.id
+            data?.bill_no
         ], function (err, res) {
             if (err) {
                 const require = {
@@ -184,8 +192,20 @@ Task.getBillByCustomer = function getBillByCustomer(data, result) {
 
 Task.getBillListProductByBillNo = function getBillListProductByBillNo(data, result) {
     return new Promise(function (resolve, reject) {
-        var sql = "SELECT * FROM tb_tem_stock WHERE invoice_id = '" + data.id + "'";
-        client.query(sql, function (err, res) {
+        var sql = `SELECT 
+        tb_tem_stock.invoice_id, 
+        tb_tem_stock.stock_id,
+        tb_tem_stock.stock_name,
+        tb_tem_stock.amount_used,
+        tb_tem_stock.price,
+        tb_tem_stock.total_price,
+        tb_stock.in_stock
+        FROM tb_tem_stock 
+        LEFT JOIN tb_stock ON tb_tem_stock.stock_id = tb_stock.id
+        WHERE invoice_id = $1 AND tb_tem_stock.active_flag = 'Y' ORDER BY tb_tem_stock.id ASC`;
+        client.query(sql, [
+            data
+        ], function (err, res) {
             if (err) {
                 const require = {
                     data: [],
@@ -232,8 +252,9 @@ Task.getBillByDate = function getBillByDate(data, result) {
 }
 
 Task.createBill = function createBill(data, result) {
-    let date = new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" });
-    let dateTime = date.toString();
+    console.log('createBill data :', data);
+    let issueDate = data.issueDate;
+    let receiveDate = data.receiveDate;
     return new Promise(function (resolve, reject) {
         var sql = "INSERT INTO tb_invoice ( " +
             "payment_id, " +
@@ -241,18 +262,21 @@ Task.createBill = function createBill(data, result) {
             "company_id, " +
             "invoice_type_id, " +
             "issue_date, " +
+            "issue_time, " +
+            "receive_date, " +
+            "receive_time, " +
             "volume_no, " +
             "bill_number, " +
+            "price_after_discount, " +
+            "deposit, " +
             "total, " +
             "payment, " +
             "net_balance, " +
             "note, " +
             "remark, " +
+            "status_invoice, " +
             "create_by, " +
-            "create_date, " +
-            "update_by, " +
-            "update_date, " +
-            "active_flag )" +
+            "update_by )" +
             "VALUES( " +
             "$1, " +
             "$2, " +
@@ -270,7 +294,10 @@ Task.createBill = function createBill(data, result) {
             "$14, " +
             "$15, " +
             "$16, " +
-            "$17 " +
+            "$17, " +
+            "$18, " +
+            "$19, " +
+            "$20 " +
             ") " +
             "RETURNING id";
         console.log('sql :', sql);
@@ -279,19 +306,22 @@ Task.createBill = function createBill(data, result) {
             data.billUserId,
             data.typeId,
             data.typeId,
-            dateTime,
+            issueDate,
+            data.issueTime,
+            receiveDate,
+            data.receiveTime,
             data.bookNo,
             data.billNo,
+            data.priceAfterDiscount,
+            data.deposit,
             data.sum,
             data.paymentTypeId,
             data.remaining,
             data.note,
             data.remark,
+            '1',
             'admin',
-            dateTime,
             'admin',
-            dateTime,
-            'Y'
         ], function (err, res) {
             if (err) {
                 const require = {
@@ -309,7 +339,7 @@ Task.createBill = function createBill(data, result) {
                         console.log('createListProduct :', res);
                     });
                 });
-                // createCustomerByInvoiceId 
+                // createCustomerByInvoiceId
                 Task.createCustomerByInvoiceId(data, invoice_id, function (res) {
                     console.log('createCustomerByInvoiceId :', res);
                 });
@@ -322,7 +352,8 @@ Task.createBill = function createBill(data, result) {
             }
         });
         client.end;
-    });
+    }
+    );
 }
 
 Task.createListProduct = function createListProduct(data, result) {
@@ -481,6 +512,128 @@ Task.updateStock = function updateStock(stock_id, amount_used, result) {
                 };
                 reject(require);
             } else {
+                const require = {
+                    data: res.rows,
+                    error: err,
+                    query_result: true,
+                };
+                resolve(require);
+            }
+        });
+        client.end;
+    });
+}
+
+Task.updateBill = function updateBill(data, result) {
+    return new Promise(function (resolve, reject) {
+        var sql = "UPDATE tb_invoice SET " +
+            "payment_id = $1, " +
+            "user_id = $2, " +
+            "company_id = $3, " +
+            "invoice_type_id = $4, " +
+            "issue_date = $5, " +
+            "issue_time = $6, " +
+            "receive_date = $7, " +
+            "receive_time = $8, " +
+            "volume_no = $9, " +
+            "bill_number = $10, " +
+            "price_after_discount = $11, " +
+            "deposit = $12, " +
+            "total = $13, " +
+            "payment = $14, " +
+            "net_balance = $15, " +
+            "note = $16, " +
+            "remark = $17, " +
+            "status_invoice = $18, " +
+            "update_by = $19 " +
+            "WHERE id = $20";
+        client.query(sql, [
+            data.paymentTypeId,
+            data.billUserId,
+            data.typeId,
+            data.typeId,
+            data.issueDate,
+            data.issueTime,
+            data.receiveDate,
+            data.receiveTime,
+            data.bookNo,
+            data.billNo,
+            data.priceAfterDiscount,
+            data.deposit,
+            data.sum,
+            data.paymentTypeId,
+            data.remaining,
+            data.note,
+            data.remark,
+            '1',
+            'admin',
+            data.billId
+        ], function (err, res) {
+            console.log('updateBill err :', err);
+            if (err) {
+                const require = {
+                    data: [],
+                    error: err,
+                    query_result: false,
+                };
+                reject(require);
+            } else {
+                let invoice_id = data.billId;
+                let listProduct = data.listProduct;
+                listProduct.forEach(element => {
+                    element.invoice_id = invoice_id;
+                    Task.updateListProduct(element, function (res) {
+                        console.log('updateListProduct :', res);
+                    });
+                });
+                const require = {
+                    data: res.rows,
+                    error: err,
+                    query_result: true,
+                };
+                resolve(require);
+            }
+        });
+        client.end;
+    }
+    );
+}
+
+Task.updateListProduct = function updateListProduct(data, result) {
+    return new Promise(function (resolve, reject) {
+        var sql = "UPDATE tb_tem_stock SET " +
+            "stock_id = $1, " +
+            "stock_name = $2, " +
+            "amount_used = $3, " +
+            "price = $4, " +
+            "total_price = $5, " +
+            "update_by = $6, " +
+            "update_date = $7 " +
+            "WHERE id = $8";
+        client.query(sql, [
+            data.stockId,
+            data.stockName,
+            data.amount,
+            data.price,
+            data.totalPrice,
+            data.update_by,
+            data.update_date,
+            data.id
+        ], function (err, res) {
+            console.log('updateListProduct err :', err);
+            if (err) {
+                const require = {
+                    data: [],
+                    error: err,
+                    query_result: false,
+                };
+                reject(require);
+            } else {
+                let stock_id = data.stockId;
+                let amount_used = data.amount;
+                Task.updateStock(stock_id, amount_used, function (res) {
+                    console.log('updateStock :', res);
+                });
                 const require = {
                     data: res.rows,
                     error: err,

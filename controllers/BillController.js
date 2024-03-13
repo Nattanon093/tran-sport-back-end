@@ -16,14 +16,13 @@ Task.getBill = async function getBill(data, result) {
 
 Task.getBillByBillNo = async function getBillByBillNo(data, result) {
     var responseBill = await BillModel.getBillByBillNo(data);
-    // var responseBillListProduct = await BillModel.getBillListProductByBillNo(data);
-    console.log('responseBill :',responseBill);
-    // console.log('responseBillListProduct :',responseBillListProduct);
-    // var response = {
-    //     bill: responseBill,
-    //     list_product: responseBillListProduct
-    // }
-    result(responseBill);
+    if (responseBill.data.length > 0) {
+        var responseBillListProduct = await BillModel.getBillListProductByBillNo(responseBill.data[0].billid);
+        responseBill.data[0].listProduct = responseBillListProduct.data;
+        result(responseBill);
+    } else {
+        result(responseBill);
+    }
 }
 
 Task.getBillByCustomer = async function getBillByCustomer(data, result) {

@@ -252,9 +252,6 @@ Task.getBillByDate = function getBillByDate(data, result) {
 }
 
 Task.createBill = function createBill(data, result) {
-    console.log('createBill data :', data);
-    let issueDate = data.issueDate;
-    let receiveDate = data.receiveDate;
     return new Promise(function (resolve, reject) {
         var sql = "INSERT INTO tb_invoice ( " +
             "payment_id, " +
@@ -306,9 +303,9 @@ Task.createBill = function createBill(data, result) {
             data.billUserId,
             data.typeId,
             data.typeId,
-            issueDate,
+            data.issueDate,
             data.issueTime,
-            receiveDate,
+            data.receiveDate,
             data.receiveTime,
             data.bookNo,
             data.billNo,

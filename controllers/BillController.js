@@ -36,6 +36,11 @@ Task.getBillByDate = async function getBillByDate(data, result) {
 }
 
 Task.createBill = async function createBill(data, result) {
+  
+    var receiveDate = data.receiveDate.split('/');
+    var issueDate = data.issueDate.split('/');
+    data.receiveDate = (receiveDate[2] - 543) + '-' + receiveDate[1] + '-' + receiveDate[0] + ' 00:00:00.000';
+    data.issueDate = (issueDate[2] - 543) + '-' + issueDate[1] + '-' + issueDate[0] + ' 00:00:00.000';
     var response = await BillModel.createBill(data);
     result(response);
 }

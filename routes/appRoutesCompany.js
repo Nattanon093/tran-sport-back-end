@@ -15,4 +15,18 @@ module.exports = function (app) {
             }
         });
     });
+
+
+    app.get(`${key}/company/getCompanyById/:id`, function (req, res) {
+        CompanyController.getCompanyById(req.params, function (err, task) {
+            try {
+                if (err) {
+                    return res.send(err);
+                }
+                return res.send(task);
+            } catch (error) {
+                return res.send(error);
+            }
+        });
+    });
 }

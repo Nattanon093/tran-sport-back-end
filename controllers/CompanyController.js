@@ -9,4 +9,9 @@ Task.getCompany = async function getCompany(data, result) {
     result(response);
 };
 
+Task.getCompanyById = async function getCompanyById(data, result) {
+    var response = await CompanyModel.getCompanyById(data);
+    result(response);
+};
+
 module.exports = Task;

@@ -17,11 +17,14 @@ Task.getCheque = function getCheque(data, result) {
     tc.cheque_payment_remark as cheque_payment_remark,
     tc.amount as amount,
     tmpt.payment_type_name as payment_type_name,
+    tmcs.status_name as status_name,
+    tmcs.id as status_id,
     tc.active_flag as active_flag
     from tb_cheque tc 
     left join tb_mas_bank tmb on tmb.id = tc.bank_id and tmb.active_flag = 'Y'
     left join tb_mas_payment_type tmpt on tmpt.id = tc.cheque_payment_id  and tmpt.active_flag = 'Y'
-    where tc.active_flag = 'Y' ORDER BY tc.id`;
+    left join tb_mas_cheque_status tmcs on tmcs.id = tc.cheque_status_id and tmcs.active_flag = 'Y'
+    where tc.active_flag = 'Y' ORDER BY tc.id desc`;
     client.query(sql, function (err, res) {
       if (err) {
         const require = {
@@ -44,7 +47,6 @@ Task.getCheque = function getCheque(data, result) {
 };
 
 Task.createCheque = function createCheque(data, result) {
-  // console.log('createBill :', data);
 
   return new Promise(function (resolve, reject) {
     var sql = `insert

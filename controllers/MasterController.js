@@ -24,5 +24,10 @@ Task.getMasterDocument = async function getMasterDocument(data, result) {
     result(response);
 };
 
+Task.getMasterChequeStatus = async function getMasterChequeStatus(data, result) {
+    var response = await MasterModel.getMasterChequeStatus(data);
+    result(response);
+};
+
 
 module.exports = Task;

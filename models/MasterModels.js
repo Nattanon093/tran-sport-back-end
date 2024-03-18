@@ -115,4 +115,37 @@ Task.getMasterDocument = function (req, result) {
   });
 };
 
+Task.getMasterChequeStatus = function (req, result) {
+  return new Promise(function (resolve, reject) {
+    var sql = `select
+    id,
+    status_name,
+    active_flag
+  from
+    tb_mas_cheque_status
+  where
+    active_flag = 'Y'
+  order by
+    id`;
+    client.query(sql, function (err, res) {
+      if (err) {
+        const require = {
+          data: [],
+          error: err,
+          query_result: false,
+        };
+        reject(require);
+      } else {
+        const require = {
+          data: res?.rows,
+          error: err,
+          query_result: true,
+        };
+        resolve(require);
+      }
+    });
+    client.end;
+  });
+};
+
 module.exports = Task;

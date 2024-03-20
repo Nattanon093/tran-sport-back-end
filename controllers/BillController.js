@@ -27,18 +27,18 @@ Task.getBillByBillNo = async function getBillByBillNo(data, result) {
     //     var date = (parseInt(receiveDate[0]) + 543) + '-' + receiveDate[1] + '-' + receiveDate[2] + ' 00:00:00.000';
     //     responseBill.data[0].receivedate = new Date(date);
     // }
-    if (responseBill.data[0].issuedate) {
-        var issueDate = new Date(responseBill.data[0].issuedate);
+    if (responseBill?.data[0]?.issuedate) {
+        var issueDate = new Date(responseBill?.data[0]?.issuedate);
         var issueDateStr = issueDate.getDate() + '/' + (issueDate.getMonth() + 1) + '/' + (issueDate.getFullYear() + 543);
         responseBill.data[0].issuedate = moment(issueDateStr, 'DD/MM/YYYY').format('DD/MM/YYYY');
     }
-    if (responseBill.data[0].receivedate) {
-        var receiveDate = new Date(responseBill.data[0].receivedate);
+    if (responseBill?.data[0]?.receivedate) {
+        var receiveDate = new Date(responseBill?.data[0]?.receivedate);
         var receiveDateStr = receiveDate.getDate() + '/' + (receiveDate.getMonth() + 1) + '/' + (receiveDate.getFullYear() + 543);
         responseBill.data[0].receivedate = moment(receiveDateStr, 'DD/MM/YYYY').format('DD/MM/YYYY');
     }
-    if (responseBill.data.length > 0) {
-        var responseBillListProduct = await BillModel.getBillListProductByBillNo(responseBill.data[0].billid);
+    if (responseBill?.data?.length > 0) {
+        var responseBillListProduct = await BillModel.getBillListProductByBillNo(responseBill?.data[0]?.billid);
         responseBill.data[0].listProduct = responseBillListProduct.data;
         result(responseBill);
     } else {

@@ -22,7 +22,6 @@ module.exports = function (app) {
     });
 
     app.post(`${key}/authorize/login`, function (req, res) {
-        console.log('appRoutesAuthen.js app.post /authen/login');
         AuthenController.login(req.body, function (err, task) {
             console.log("task :", task);
             try {
@@ -32,6 +31,23 @@ module.exports = function (app) {
                     return res.send(err);
                 }
                 console.log('appRoutesAuthen.js app.post /authen/login success');
+                return res.send(task);
+            } catch (error) {
+                return res.send(error);
+            }
+        });
+    });
+
+    app.post(`${key}/authorize/refresh-token`, function (req, res) {
+        AuthenController.refreshToken(req.body, function (err, task) {
+            console.log("task :", task);
+            try {
+                if (err) {
+                    console.log("err :", err);
+                    console.log('appRoutesAuthen.js app.post /authen/refresh-token err');
+                    return res.send(err);
+                }
+                console.log('appRoutesAuthen.js app.post /authen/refresh-token success');
                 return res.send(task);
             } catch (error) {
                 return res.send(error);

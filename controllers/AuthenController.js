@@ -15,4 +15,8 @@ Task.login = async function login(data, result) {
     result(response);
 };
 
+Task.refreshToken = async function refreshToken(data, result) {
+    var response = await AuthenModel.refreshToken(data);
+    result(response);
+};
 module.exports = Task;

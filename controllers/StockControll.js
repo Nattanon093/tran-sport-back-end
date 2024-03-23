@@ -5,8 +5,12 @@ var Task = function (task) {
 };
 
 Task.getStock = async function getStock(data, result) {
-    var response = await StockModel.getStock(data);
-    result(response);
+    try {
+        var response = await StockModel.getStock(data);
+        result(response);
+    } catch (error) {
+        result(error);
+    }
 };
 
 module.exports = Task;

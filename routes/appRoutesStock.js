@@ -1,4 +1,4 @@
-var StockController = require('../controllers/StockControll');
+var StockController = require('../controllers/StockController');
 var stock_model = require('../models/StockModels');
 
 module.exports = function (app) {

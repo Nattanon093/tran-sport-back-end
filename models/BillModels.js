@@ -116,12 +116,13 @@ Task.getBillByBillNo = function getBillByBillNo(data, result) {
         tb_customer.send,
         company_id,
         company_name,
+        tb_invoice.donate,
         tb_invoice.issue_date AS issueDate,
         tb_invoice.issue_time AS issueTime,
         bill_number AS billNo,
         volume_no AS bookNo,
         user_id,
-        tb_users.nickname  || ' : ' ||tb_users.firstname || ' ' || tb_users.lastname AS billUser,
+        tb_users.firstname || ' ' || tb_users.lastname AS billUser,
         payment_id,
         tb_mas_payment.payment_name AS paymentName,
         total,
@@ -200,6 +201,7 @@ Task.getBillListProductByBillNo = function getBillListProductByBillNo(data, resu
         tb_tem_stock.invoice_id, 
         tb_tem_stock.stock_id,
         tb_tem_stock.stock_name,
+        tb_tem_stock.stock_other,
         tb_tem_stock.amount_used,
         tb_tem_stock.price,
         tb_tem_stock.total_price,
@@ -256,6 +258,7 @@ Task.getBillByDate = function getBillByDate(data, result) {
 }
 
 Task.createBill = function createBill(data, result) {
+    console.log('data :', data);
     return new Promise(function (resolve, reject) {
         var sql = "INSERT INTO tb_invoice ( " +
             "payment_id, " +
@@ -264,6 +267,7 @@ Task.createBill = function createBill(data, result) {
             "invoice_type_id, " +
             "issue_date, " +
             "issue_time, " +
+            "donate, " +
             "receive_date, " +
             "receive_time, " +
             "volume_no, " +
@@ -298,7 +302,8 @@ Task.createBill = function createBill(data, result) {
             "$17, " +
             "$18, " +
             "$19, " +
-            "$20 " +
+            "$20, " +
+            "$21 " +
             ") " +
             "RETURNING id";
         console.log('sql :', sql);
@@ -309,6 +314,7 @@ Task.createBill = function createBill(data, result) {
             data.typeId,
             data.issueDate,
             data.issueTime,
+            data.donate,
             data.receiveDate,
             data.receiveTime,
             data.bookNo,
@@ -325,8 +331,10 @@ Task.createBill = function createBill(data, result) {
             'admin',
         ], function (err, res) {
             if (err) {
+                console.log('err :', err);
                 const require = {
                     data: [],
+                    status: 500,
                     error: err,
                     query_result: false,
                 };
@@ -346,6 +354,7 @@ Task.createBill = function createBill(data, result) {
                 });
                 const require = {
                     data: res.rows,
+                    status: 200,
                     error: err,
                     query_result: true,
                 };
@@ -366,6 +375,7 @@ Task.createListProduct = function createListProduct(data, result) {
             "invoice_id, " +
             "stock_id, " +
             "stock_name, " +
+            "stock_other, " +
             "amount_used, " +
             "price, " +
             "total_price, " +
@@ -386,13 +396,15 @@ Task.createListProduct = function createListProduct(data, result) {
             "$8, " +
             "$9, " +
             "$10, " +
-            "$11 " +
+            "$11, " +
+            "$12 " +
             ") " +
             "RETURNING id";
         client.query(sql, [
             data.invoice_id,
             data.stockId,
             data.stockName,
+            data.stockOther,
             data.amount,
             data.price,
             data.totalPrice,
@@ -402,7 +414,6 @@ Task.createListProduct = function createListProduct(data, result) {
             data.update_date,
             'Y'
         ], function (err, res) {
-            console.log('createListProduct err :', err);
             if (err) {
                 const require = {
                     data: [],
@@ -413,9 +424,11 @@ Task.createListProduct = function createListProduct(data, result) {
             } else {
                 let stock_id = data.stockId;
                 let amount_used = data.amount;
-                Task.updateStock(stock_id, amount_used, function (res) {
-                    console.log('updateStock :', res);
-                });
+                if (data.stockName !== "อื่นๆ") {
+                    Task.updateStock(stock_id, amount_used, function (res) {
+                        console.log('updateStock :', res);
+                    });
+                }
                 const require = {
                     data: res.rows,
                     error: err,
@@ -479,7 +492,6 @@ Task.createCustomerByInvoiceId = function createCustomerByInvoiceId(data, invoic
             dateTime,
             'Y'
         ], function (err, res) {
-            console.log('createCustomerByInvoiceId err :', err);
             if (err) {
                 const require = {
                     data: [],
@@ -504,7 +516,6 @@ Task.updateStock = function updateStock(stock_id, amount_used, result) {
     return new Promise(function (resolve, reject) {
         var sql = "UPDATE tb_stock SET in_stock = in_stock - " + amount_used + " WHERE id = " + stock_id;
         client.query(sql, function (err, res) {
-            console.log('updateStock err :', err);
             if (err) {
                 const require = {
                     data: [],
@@ -547,7 +558,7 @@ Task.updateBill = function updateBill(data, result) {
             "remark = $17, " +
             "status_invoice = $18, " +
             "update_by = $19 " +
-            "WHERE id = $20";
+            "WHERE bill_number = $20";
         client.query(sql, [
             data.paymentTypeId,
             data.billUserId,
@@ -568,9 +579,8 @@ Task.updateBill = function updateBill(data, result) {
             data.remark,
             '1',
             'admin',
-            data.billId
+            data.billNo
         ], function (err, res) {
-            console.log('updateBill err :', err);
             if (err) {
                 const require = {
                     data: [],
@@ -596,8 +606,7 @@ Task.updateBill = function updateBill(data, result) {
             }
         });
         client.end;
-    }
-    );
+    });
 }
 
 Task.updateListProduct = function updateListProduct(data, result) {
@@ -621,7 +630,6 @@ Task.updateListProduct = function updateListProduct(data, result) {
             data.update_date,
             data.id
         ], function (err, res) {
-            console.log('updateListProduct err :', err);
             if (err) {
                 const require = {
                     data: [],

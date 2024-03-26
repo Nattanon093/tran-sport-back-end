@@ -90,12 +90,15 @@ module.exports = function (app) {
     });
 
     // updateBill
-    app.put(`${key}/bill/updateBill`, function (req, res) {
+    app.put(`${key}/bill/updateBill/:id`, function (req, res) {
         BillController.updateBill(req.body, function (err, task) {
             try {
+                console.log('updateBill :', req.body);
                 if (err) {
+                    console.log('updateBill err :', err);
                     return res.send(err);
                 }
+                console.log('updateBill task :', task);
                 return res.send(task);
             } catch (error) {
                 return res.send(error);
@@ -104,7 +107,7 @@ module.exports = function (app) {
     });
 
     // deleteBill
-    app.delete(`${key}/bill/deleteBill`, function (req, res) {
+    app.delete(`${key}/bill/deleteBill/:id`, function (req, res) {
         BillController.deleteBill(req.body, function (err, task) {
             try {
                 if (err) {

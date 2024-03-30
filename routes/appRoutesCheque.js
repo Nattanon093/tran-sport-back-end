@@ -31,6 +31,20 @@ module.exports = function (app) {
         });
     });
 
+    // updateCheque
+    app.put(`${key}/cheque/updateCheque`, function (req, res) {
+        ChequeController.updateCheque(req.body, function (err, task) {
+            try {
+                if (err) {
+                    return res.send(err);
+                }
+                return res.send(task);
+            } catch (error) {
+                return res.send(error);
+            }
+        });
+    });
+
     // deleteCheque
     app.delete(`${key}/cheque/deleteCheque`, function (req, res) {
         ChequeController.deleteCheque(req.body, function (err, task) {

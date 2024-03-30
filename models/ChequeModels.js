@@ -63,7 +63,8 @@ Task.createCheque = function createCheque(data, result) {
 	cheque_payment_remark,
 	amount,
 	create_by,
-	update_by
+	update_by,
+  cheque_status_id
 )
 values(
 $1,
@@ -76,7 +77,8 @@ $7,
 $8,
 $9,
 $10,
-$11
+$11,
+$12
 )`;
 
     console.log("sql :", sql);
@@ -93,7 +95,8 @@ $11
         data.paymentRemark,
         data.amount,
         'admin',
-        'admin'
+        'admin',
+        1
       ],
       function (err, res) {
         console.log(err);

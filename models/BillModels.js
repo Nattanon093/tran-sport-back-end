@@ -128,6 +128,7 @@ Task.getBillByBillNo = function getBillByBillNo(data, result) {
         total,
         net_balance AS remaining,
         deposit,
+        pay_extra AS payExtra,
         price_after_discount AS priceAfterDiscount,
         (total - price_after_discount) AS discount,
         status_invoice AS status,
@@ -198,6 +199,7 @@ Task.getBillByCustomer = function getBillByCustomer(data, result) {
 Task.getBillListProductByBillNo = function getBillListProductByBillNo(data, result) {
     return new Promise(function (resolve, reject) {
         var sql = `SELECT 
+        tb_tem_stock.id AS listProductId,
         tb_tem_stock.invoice_id, 
         tb_tem_stock.stock_id,
         tb_tem_stock.stock_name,
@@ -326,7 +328,7 @@ Task.createBill = function createBill(data, result) {
             data.remaining,
             data.note,
             data.remark,
-            '1',
+            '2',
             'admin',
             'admin',
         ], function (err, res) {
@@ -378,12 +380,7 @@ Task.createListProduct = function createListProduct(data, result) {
             "stock_other, " +
             "amount_used, " +
             "price, " +
-            "total_price, " +
-            "create_by, " +
-            "create_date, " +
-            "update_by, " +
-            "update_date, " +
-            "active_flag " +
+            "total_price " +
             ") " +
             "VALUES( " +
             "$1, " +
@@ -392,12 +389,7 @@ Task.createListProduct = function createListProduct(data, result) {
             "$4, " +
             "$5, " +
             "$6, " +
-            "$7, " +
-            "$8, " +
-            "$9, " +
-            "$10, " +
-            "$11, " +
-            "$12 " +
+            "$7 " +
             ") " +
             "RETURNING id";
         client.query(sql, [
@@ -407,12 +399,7 @@ Task.createListProduct = function createListProduct(data, result) {
             data.stockOther,
             data.amount,
             data.price,
-            data.totalPrice,
-            data.create_by,
-            dateTime,
-            dateTime,
-            data.update_date,
-            'Y'
+            data.totalPrice
         ], function (err, res) {
             if (err) {
                 const require = {
@@ -516,20 +503,20 @@ Task.updateStock = function updateStock(stock_id, amount_used, result) {
     return new Promise(function (resolve, reject) {
         var sql = "UPDATE tb_stock SET in_stock = in_stock - " + amount_used + " WHERE id = " + stock_id;
         client.query(sql, function (err, res) {
-            if (err) {
-                const require = {
-                    data: [],
-                    error: err,
-                    query_result: false,
-                };
-                reject(require);
-            } else {
+            try {
                 const require = {
                     data: res.rows,
                     error: err,
                     query_result: true,
                 };
                 resolve(require);
+            } catch (error) {
+                const require = {
+                    data: [],
+                    error: err,
+                    query_result: false,
+                };
+                reject(require);
             }
         });
         client.end;
@@ -551,14 +538,15 @@ Task.updateBill = function updateBill(data, result) {
             "bill_number = $10, " +
             "price_after_discount = $11, " +
             "deposit = $12, " +
-            "total = $13, " +
-            "payment = $14, " +
-            "net_balance = $15, " +
-            "note = $16, " +
-            "remark = $17, " +
-            "status_invoice = $18, " +
-            "update_by = $19 " +
-            "WHERE bill_number = $20";
+            "pay_extra = $13, " +
+            "total = $14, " +
+            "payment = $15, " +
+            "net_balance = $16, " +
+            "note = $17, " +
+            "remark = $18, " +
+            "status_invoice = $19, " +
+            "update_by = $20 " +
+            "WHERE id = $21";
         client.query(sql, [
             data.paymentTypeId,
             data.billUserId,
@@ -572,37 +560,52 @@ Task.updateBill = function updateBill(data, result) {
             data.billNo,
             data.priceAfterDiscount,
             data.deposit,
+            data.payExtra,
             data.sum,
             data.paymentTypeId,
             data.remaining,
             data.note,
             data.remark,
-            '1',
+            data.status,
             'admin',
-            data.billNo
+            data.billId
         ], function (err, res) {
-            if (err) {
-                const require = {
-                    data: [],
-                    error: err,
-                    query_result: false,
-                };
-                reject(require);
-            } else {
-                let invoice_id = data.billId;
-                let listProduct = data.listProduct;
-                listProduct.forEach(element => {
-                    element.invoice_id = invoice_id;
-                    Task.updateListProduct(element, function (res) {
-                        console.log('updateListProduct :', res);
+            try {
+                if (err) {
+                    const require = {
+                        data: [],
+                        error: err,
+                        query_result: false,
+                    };
+                    reject(require);
+                } else {
+                    let listProduct = data.listProduct;
+                    listProduct.forEach(element => {
+                        if (element.stockName !== "อื่นๆ") {
+                            if (element.listProductId) {
+                                // Task.updateListProduct(element, function (res) {
+                                //     console.log('updateListProduct :', res);
+                                // });
+                                Task.getStockByStockId(element, function (res) {
+                                    console.log('getStockByStockId res?.data[0], :', res?.data[0]);
+                                });
+                            } else {
+                                element.invoice_id = data.billId;
+                                Task.createListProduct(element, function (res) {
+                                    console.log('createListProduct :', res);
+                                });
+                            }
+                        }
                     });
-                });
-                const require = {
-                    data: res.rows,
-                    error: err,
-                    query_result: true,
-                };
-                resolve(require);
+                    const require = {
+                        data: res,
+                        error: err,
+                        query_result: true,
+                    };
+                    resolve(require);
+                }
+            } catch (error) {
+                console.log('error :', error);
             }
         });
         client.end;
@@ -628,27 +631,125 @@ Task.updateListProduct = function updateListProduct(data, result) {
             data.totalPrice,
             data.update_by,
             data.update_date,
-            data.id
+            data.listProductId
         ], function (err, res) {
-            if (err) {
-                const require = {
-                    data: [],
-                    error: err,
-                    query_result: false,
-                };
-                reject(require);
-            } else {
+            try {
                 let stock_id = data.stockId;
                 let amount_used = data.amount;
-                Task.updateStock(stock_id, amount_used, function (res) {
-                    console.log('updateStock :', res);
-                });
+                // if (data.stockName !== "อื่นๆ") {
+                //     Task.getStockByStockId(stock_id, data.amount, function (res) {
+                //         console.log('getStockByStockId res?.data[0], :', res?.data[0]);
+                //     });
+                // }
                 const require = {
                     data: res.rows,
                     error: err,
                     query_result: true,
                 };
                 resolve(require);
+            } catch (error) {
+                console.log('updateListProduct error :', error);
+                const require = {
+                    data: [],
+                    error: err,
+                    query_result: false,
+                };
+                reject(require);
+            }
+        });
+        client.end;
+    });
+}
+
+Task.getStockByStockId = function getStockByStockId(data, result) {
+    return new Promise(function (resolve, reject) {
+        var sql = "SELECT tb_stock.in_stock, tb_tem_stock.amount_used " +
+            "FROM tb_stock " +
+            "LEFT JOIN tb_tem_stock ON tb_stock.id = tb_tem_stock.stock_id " +
+            "WHERE tb_stock.id = " + data.stockId;
+        client.query(sql, function (err, res) {
+            try {
+                console.log('getStockByStockId res?.rows[0], :', res?.rows[0], data.stockId);
+
+                let in_stock = res?.rows[0].in_stock;
+                let amount_used_before = res?.rows[0].amount_used;
+                let amount_used = data.amount;
+                let amount_used_diff = amount_used_before > amount_used ? in_stock = in_stock + (amount_used_before - amount_used) : in_stock = in_stock - (amount_used - amount_used_before)
+
+                Task.updateStockByStockId(data, amount_used_diff, function (res) {
+                    console.log('updateStockByStockId :', res);
+                });
+
+                const require = {
+                    data: res,
+                    error: err,
+                    query_result: true,
+                };
+                resolve(require);
+            } catch (error) {
+                console.log('getStockByStockId error :', error);
+                const require = {
+                    data: [],
+                    error: err,
+                    query_result: false,
+                };
+                reject(require);
+            }
+        });
+        client.end;
+    });
+
+}
+
+Task.updateStockByStockId = function updateStockByStockId(data, in_stock, result) {
+    console.log('stock_id :', data.stockId, in_stock);
+    return new Promise(function (resolve, reject) {
+        var sql = "UPDATE tb_stock SET in_stock = " + in_stock + " WHERE id = " + data.stockId;
+        client.query(sql, function (err, res) {
+            try {
+                Task.updateListProduct(data, function (res) {
+                    console.log('updateListProduct :', res);
+                });
+                const require = {
+                    data: res,
+                    error: err,
+                    query_result: true,
+                };
+                resolve(require);
+            } catch (error) {
+                const require = {
+                    data: [],
+                    error: err,
+                    query_result: false,
+                };
+                reject(require);
+            }
+        });
+        client.end;
+    });
+    return null
+}
+
+Task.deleteListProductByListProductId = function deleteListProductByListProductId(data, result) {
+    return new Promise(function (resolve, reject) {
+        var sql = "DELETE FROM tb_tem_stock WHERE id = $1";
+        client.query(sql, [
+            data.listProductId
+        ], function (err, res) {
+            try {
+                const require = {
+                    data: res,
+                    error: err,
+                    query_result: true,
+                };
+                resolve(require);
+            } catch (error) {
+                const require = {
+                    data: [],
+                    error: err,
+                    query_result: false,
+                };
+                reject(require);
             }
         });
         client.end;

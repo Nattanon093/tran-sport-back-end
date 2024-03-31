@@ -70,8 +70,8 @@ Task.createBill = async function createBill(data, result) {
     try {
         var receiveDate = data.receiveDate.split('/');
         var issueDate = data.issueDate.split('/');
-        var receiveTime = moment().format('HH:mm:ss');
-        var issueTime = moment().format('HH:mm:ss');
+        var receiveTime = moment(data.receiveTime).format('HH:mm:ss');
+        var issueTime = moment(data.issueTime).format('HH:mm:ss');
         data.receiveDate = (receiveDate[2] - 543) + '-' + receiveDate[1] + '-' + receiveDate[0] + ' 00:00:00.000';
         data.issueDate = (issueDate[2] - 543) + '-' + issueDate[1] + '-' + issueDate[0] + ' 00:00:00.000';
         data.receiveTime = receiveTime;
@@ -101,6 +101,16 @@ Task.updateBill = async function updateBill(data, result) {
 Task.deleteBill = async function deleteBill(data, result) {
     try {
         var response = await BillModel.deleteBill(data);
+        result(response);
+    }
+    catch (error) {
+        result(error);
+    }
+}
+
+Task.deleteListProductByListProductId = async function deleteListProductByListProductId(data, result) {
+    try {
+        var response = await BillModel.deleteListProductByListProductId(data);
         result(response);
     }
     catch (error) {

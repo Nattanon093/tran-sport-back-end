@@ -93,12 +93,9 @@ module.exports = function (app) {
     app.put(`${key}/bill/updateBill/:id`, function (req, res) {
         BillController.updateBill(req.body, function (err, task) {
             try {
-                console.log('updateBill :', req.body);
                 if (err) {
-                    console.log('updateBill err :', err);
                     return res.send(err);
                 }
-                console.log('updateBill task :', task);
                 return res.send(task);
             } catch (error) {
                 return res.send(error);
@@ -120,6 +117,18 @@ module.exports = function (app) {
         });
     });
 
+    app.delete(`${key}/bill/deleteListProductByInvoiceId/:bill_no`, function (req, res) {
+        BillController.deleteListProductByListProductId(req.params, function (err, task) {
+            try {
+                if (err) {
+                    return res.send(err);
+                }
+                return res.send(task);
+            } catch (error) {
+                return res.send(error);
+            }
+        });
+    });
     
 }
 

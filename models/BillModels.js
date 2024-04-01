@@ -674,7 +674,7 @@ Task.getStockByStockId = function getStockByStockId(data, result) {
                 let in_stock = res?.rows[0].in_stock;
                 let amount_used_before = res?.rows[0].amount_used;
                 let amount_used = data.amount;
-                let amount_used_diff = amount_used_before > amount_used ? in_stock = in_stock + (amount_used_before - amount_used) : in_stock = in_stock - (amount_used - amount_used_before)
+                let amount_used_diff = amount_used_before > amount_used ? in_stock = parseInt(in_stock) + (parseInt(amount_used_before) - parseInt(amount_used)) : in_stock = parseInt(in_stock) - (parseInt(amount_used) - parseInt(amount_used_before))
 
                 Task.updateStockByStockId(data, amount_used_diff, function (res) {
                     console.log('updateStockByStockId :', res);

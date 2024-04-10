@@ -6,21 +6,22 @@ var Task = function (task) {
 Task.getExpense = function getExpense(data, result) {
   return new Promise(function (resolve, reject) {
     var sql = `select
-	id,
-	expense_name,
-	amount,
-	remark,
-	create_by,
-	create_date,
-	update_by,
-	update_date,
-	active_flag
+	te.id,
+	te.expense_name,
+	te.amount,
+	te.remark,
+	te.expense_type_id,
+	tmet.expense_type_name,
+	te.create_by,
+	te.create_date,
+	te.update_by,
+	te.update_date,
+	te.active_flag
 from
-	tb_expense
-where
-	active_flag = 'Y'
-order by
-	update_date desc`;
+	tb_expense te
+left join tb_mas_expense_type tmet on tmet.id = te.expense_type_id and tmet.active_flag = 'Y'
+where te.active_flag = 'Y'
+order by te.update_date desc`;
 
     client.query(sql, function (err, res) {
       if (err) {
@@ -52,6 +53,7 @@ Task.createExpense = function createExpense(data, result) {
     expense_name,
     amount,
     remark,
+    expense_type_id,
     create_by,
     update_by
   )
@@ -60,7 +62,8 @@ Task.createExpense = function createExpense(data, result) {
   $2,
   $3,
   $4,
-  $5
+  $5,
+  $6
   )`;
 
     console.log("sql :", sql);
@@ -70,8 +73,9 @@ Task.createExpense = function createExpense(data, result) {
         data.expenseName,
         data.amount,
         data.expenseRemark,
+        data.expenseType,
         "admin",
-        "admin"
+        "admin",
       ],
       function (err, res) {
         console.log(err);

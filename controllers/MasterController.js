@@ -49,5 +49,14 @@ Task.getMasterChequeStatus = async function getMasterChequeStatus(data, result) 
     }
 };
 
+Task.getMasterExpenseType = async function getMasterExpenseType(data, result) {
+    try {
+        var response = await MasterModel.getMasterExpenseType(data);
+        result(response);
+    } catch (error) {
+        result(error);
+    }
+};
+
 
 module.exports = Task;

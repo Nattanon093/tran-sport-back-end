@@ -67,4 +67,17 @@ module.exports = function (app) {
             }
         });
     });
+
+    app.get(`${key}/master/getMasterExpenseType`, function (req, res) {
+        MasterController.getMasterExpenseType(req.body, function (err, task) {
+            try {
+                if (err) {
+                    return res.send(err);
+                }
+                return res.send(task);
+            } catch (error) {
+                return res.send(error);
+            }
+        });
+    });
 }

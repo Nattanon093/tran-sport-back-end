@@ -148,4 +148,35 @@ Task.getMasterChequeStatus = function (req, result) {
   });
 };
 
+Task.getMasterExpenseType = function (req, result) {
+  return new Promise(function (resolve, reject) {
+    var sql = `select
+    id,
+    expense_type_name,
+    active_flag
+  from
+    tb_mas_expense_type
+  where active_flag = 'Y'
+  order by id`;
+    client.query(sql, function (err, res) {
+      if (err) {
+        const require = {
+          data: [],
+          error: err,
+          query_result: false,
+        };
+        reject(require);
+      } else {
+        const require = {
+          data: res?.rows,
+          error: err,
+          query_result: true,
+        };
+        resolve(require);
+      }
+    });
+    client.end;
+  });
+};
+
 module.exports = Task;

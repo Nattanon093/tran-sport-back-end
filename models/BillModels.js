@@ -308,7 +308,6 @@ Task.createBill = function createBill(data, result) {
             "$21 " +
             ") " +
             "RETURNING id";
-        console.log('sql :', sql);
         client.query(sql, [
             data.paymentTypeId,
             data.billUserId,
@@ -350,7 +349,6 @@ Task.createBill = function createBill(data, result) {
                         console.log('createListProduct :', res);
                     });
                 });
-                // createCustomerByInvoiceId
                 Task.createCustomerByInvoiceId(data, invoice_id, function (res) {
                     console.log('createCustomerByInvoiceId :', res);
                 });
@@ -440,7 +438,6 @@ Task.createCustomerByInvoiceId = function createCustomerByInvoiceId(data, invoic
             "customer_address, " +
             "mobile_no, " +
             "receive_from, " +
-            // "receive_time, " +
             "send, " +
             "create_by, " +
             "create_date, " +
@@ -470,8 +467,6 @@ Task.createCustomerByInvoiceId = function createCustomerByInvoiceId(data, invoic
             data.address,
             data.phone,
             data.receiveFrom,
-            // data.receiveDate,
-            // data.receiveTime,
             data.send,
             'admin',
             dateTime,
@@ -583,9 +578,6 @@ Task.updateBill = function updateBill(data, result) {
                     listProduct.forEach(element => {
                         if (element.stockName !== "อื่นๆ") {
                             if (element.listProductId) {
-                                // Task.updateListProduct(element, function (res) {
-                                //     console.log('updateListProduct :', res);
-                                // });
                                 Task.getStockByStockId(element, function (res) {
                                     console.log('getStockByStockId res?.data[0], :', res?.data[0]);
                                 });
@@ -595,7 +587,21 @@ Task.updateBill = function updateBill(data, result) {
                                     console.log('createListProduct :', res);
                                 });
                             }
+                        } else {
+                            if (element.listProductId) {
+                                Task.updateListProduct(element, function (res) {
+                                    console.log('updateListProduct :', res);
+                                });
+                            } else {
+                                element.invoice_id = data.billId;
+                                Task.createListProduct(element, function (res) {
+                                    console.log('createListProduct :', res);
+                                });
+                            }
                         }
+                    });
+                    Task.updateCustomerByInvoiceId(data, function (res) {
+                        console.log('updateCustomerByInvoiceId :', res);
                     });
                     const require = {
                         data: res,
@@ -636,11 +642,6 @@ Task.updateListProduct = function updateListProduct(data, result) {
             try {
                 let stock_id = data.stockId;
                 let amount_used = data.amount;
-                // if (data.stockName !== "อื่นๆ") {
-                //     Task.getStockByStockId(stock_id, data.amount, function (res) {
-                //         console.log('getStockByStockId res?.data[0], :', res?.data[0]);
-                //     });
-                // }
                 const require = {
                     data: res.rows,
                     error: err,
@@ -669,8 +670,6 @@ Task.getStockByStockId = function getStockByStockId(data, result) {
             "WHERE tb_stock.id = " + data.stockId;
         client.query(sql, function (err, res) {
             try {
-                console.log('getStockByStockId res?.rows[0], :', res?.rows[0], data.stockId);
-
                 let in_stock = res?.rows[0].in_stock;
                 let amount_used_before = res?.rows[0].amount_used;
                 let amount_used = data.amount;
@@ -702,7 +701,6 @@ Task.getStockByStockId = function getStockByStockId(data, result) {
 }
 
 Task.updateStockByStockId = function updateStockByStockId(data, in_stock, result) {
-    console.log('stock_id :', data.stockId, in_stock);
     return new Promise(function (resolve, reject) {
         var sql = "UPDATE tb_stock SET in_stock = " + in_stock + " WHERE id = " + data.stockId;
         client.query(sql, function (err, res) {
@@ -728,6 +726,50 @@ Task.updateStockByStockId = function updateStockByStockId(data, in_stock, result
         client.end;
     });
     return null
+}
+
+Task.updateCustomerByInvoiceId = function updateCustomerByInvoiceId(data, result) {
+    return new Promise(function (resolve, reject) {
+        var sql = "UPDATE tb_customer SET " +
+            "deceased_name = $1, " +
+            "contact_person = $2, " +
+            "customer_address = $3, " +
+            "mobile_no = $4, " +
+            "receive_from = $5, " +
+            "send = $6, " +
+            "update_by = $7, " +
+            "update_date = $8 " +
+            "WHERE invoice_id = $9";
+        client.query(sql, [
+            data.deceased,
+            data.contact,
+            data.address,
+            data.phone,
+            data.receiveFrom,
+            data.send,
+            'admin',
+            data.update_date,
+            data.billId
+        ], function (err, res) {
+            try {
+                const require = {
+                    data: res.rows,
+                    error: err,
+                    query_result: true,
+                };
+                resolve(require);
+            } catch (error) {
+                const require = {
+                    data: [],
+                    error: err,
+                    query_result: false,
+                };
+                reject(require);
+            }
+        });
+        client.end;
+    });
+
 }
 
 Task.deleteListProductByListProductId = function deleteListProductByListProductId(data, result) {

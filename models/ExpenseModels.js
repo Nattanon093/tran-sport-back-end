@@ -100,4 +100,75 @@ Task.createExpense = function createExpense(data, result) {
   });
 };
 
+Task.updateExpense = function updateExpense(data) {
+  return new Promise(function (resolve, reject) {
+    var sql = `update
+    tb_expense
+  set
+    expense_type_id = $1,
+    expense_name = $2,
+    amount = $3,
+    remark = $4,
+    update_by = 'admin',
+    update_date = CURRENT_TIMESTAMP
+  where
+    id = $5`;
+
+    client.query(
+      sql,
+      [
+        data.expenseType,
+        data.expenseName,
+        data.amount,
+        data.expenseRemark,
+        data.id,
+      ],
+      function (err, res) {
+        if (err) {
+          const require = {
+            data: [],
+            error: err,
+            query_result: false,
+          };
+          reject(require);
+        } else {
+          const require = {
+            data: res.rows,
+            error: err,
+            query_result: true,
+          };
+          resolve(require);
+        }
+      }
+    );
+    client.end;
+  });
+};
+
+Task.deleteExpense = function deleteExpense(data, result) {
+  console.log("data", data);
+  return new Promise(function (resolve, reject) {
+    var sql = `DELETE FROM tb_expense
+    WHERE id=$1`;
+    client.query(sql, [data.id], function (err, res) {
+      if (err) {
+        const require = {
+          data: [],
+          error: err,
+          query_result: false,
+        };
+        reject(require);
+      } else {
+        const require = {
+          data: res.rows,
+          error: err,
+          query_result: true,
+        };
+        resolve(require);
+      }
+    });
+    client.end;
+  });
+};
+
 module.exports = Task;

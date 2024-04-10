@@ -31,4 +31,31 @@ module.exports = function (app) {
     });
   });
 
+  // updateExpense
+  app.put(`${key}/expense/updateExpense`, function (req, res) {
+    ExpenseController.updateExpense(req.body, function (err, task) {
+      try {
+        if (err) {
+          return res.send(err);
+        }
+        return res.send(task);
+      } catch (error) {
+        return res.send(error);
+      }
+    });
+  });
+
+  // deleteExpense
+  app.delete(`${key}/expense/deleteExpense`, function (req, res) {
+    ExpenseController.deleteExpense(req.body, function (err, task) {
+      try {
+        if (err) {
+          return res.send(err);
+        }
+        return res.send(task);
+      } catch (error) {
+        return res.send(error);
+      }
+    });
+  });
 };

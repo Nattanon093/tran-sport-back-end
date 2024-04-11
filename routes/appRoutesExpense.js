@@ -17,6 +17,20 @@ module.exports = function (app) {
     });
   });
 
+  // getExpenseById
+  app.get(`${key}/expense/getExpenseById/:id`, function (req, res) {
+    ExpenseController.getExpenseById(req.params, function (err, task) {
+      try {
+        if (err) {
+          return res.send(err);
+        }
+        return res.send(task);
+      } catch (error) {
+        return res.send(error);
+      }
+    });
+  });
+
   // createExpense
   app.post(`${key}/expense/createExpense`, function (req, res) {
     ExpenseController.createExpense(req.body, function (err, task) {
@@ -46,7 +60,7 @@ module.exports = function (app) {
   });
 
   // deleteExpense
-  app.delete(`${key}/expense/deleteExpense`, function (req, res) {
+  app.put(`${key}/expense/deleteExpense`, function (req, res) {
     ExpenseController.deleteExpense(req.body, function (err, task) {
       try {
         if (err) {

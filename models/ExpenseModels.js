@@ -44,6 +44,43 @@ order by te.update_date desc`;
   });
 };
 
+Task.getExpenseById = function getExpenseById(data, result) {
+  console.log('getExpenseById : ',data);
+
+  return new Promise(function (resolve, reject) {
+    var sql = `select
+    te.expense_name,
+    te.amount,
+    te.remark,
+    te.expense_type_id,
+    tmet.expense_type_name
+  from
+    tb_expense te
+  left join tb_mas_expense_type tmet on tmet.id = te.expense_type_id and tmet.active_flag = 'Y'
+  where te.active_flag = 'Y' and te.id = $1`;
+
+    client.query(sql, [data.id], function (err, res) {
+      console.log(res);
+      if (err) {
+        const require = {
+          data: [],
+          error: err,
+          query_result: false,
+        };
+        reject(require);
+      } else {
+        const require = {
+          data: res.rows,
+          error: err,
+          query_result: true,
+        };
+        resolve(require);
+      }
+    });
+    client.end;
+  });
+};
+
 Task.createExpense = function createExpense(data, result) {
   return new Promise(function (resolve, reject) {
     var sql = `insert
@@ -148,8 +185,14 @@ Task.updateExpense = function updateExpense(data) {
 Task.deleteExpense = function deleteExpense(data, result) {
   console.log("data", data);
   return new Promise(function (resolve, reject) {
-    var sql = `DELETE FROM tb_expense
-    WHERE id=$1`;
+    var sql = `update
+    tb_expense
+  set
+    update_by = 'admin',
+    update_date = CURRENT_TIMESTAMP,
+    active_flag = 'N'
+  where
+      id = $1`;
     client.query(sql, [data.id], function (err, res) {
       if (err) {
         const require = {

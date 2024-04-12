@@ -174,61 +174,67 @@ Task.getBillByBillNo = function getBillByBillNo(data, result) {
 
 Task.searchBill = function searchBill(data, result) {
     return new Promise(function (resolve, reject) {
-        var sql = `SELECT
-        tb_invoice.id AS billId,
-        tb_customer.deceased_name AS deceased,
-        tb_customer.contact_person AS contact,
-        tb_customer.customer_address AS address,
-        tb_customer.mobile_no AS phone ,
-        tb_customer.receive_from AS receive,
-        tb_invoice.receive_date AS receiveDate,
-        tb_invoice.receive_time AS receiveTime,
-        tb_customer.send,
-        company_id,
-        company_name,
-        tb_invoice.donate,
-        tb_invoice.issue_date AS issueDate,
-        tb_invoice.issue_time AS issueTime,
-        bill_number AS billNo,
-        volume_no AS bookNo,
-        user_id,
-        tb_users.firstname || ' ' || tb_users.lastname AS billUser,
-        payment_id,
-        tb_mas_payment.payment_name AS paymentName,
-        total,
-        net_balance AS remaining,
-        deposit,
-        pay_extra AS payExtra,
-        price_after_discount AS priceAfterDiscount,
-        (total - price_after_discount) AS discount,
-        status_invoice AS status,
-        tb_invoice.create_date AS billDate,
-        note,
-        remark
-    FROM
-        tb_invoice
-    LEFT JOIN tb_customer ON
-        tb_invoice.id = tb_customer.invoice_id
-    LEFT JOIN tb_mas_invoice_type ON
-        tb_invoice.invoice_type_id = tb_mas_invoice_type.id
-    LEFT JOIN tb_mas_payment ON
-        tb_invoice.payment_id = tb_mas_payment.id
-    LEFT JOIN tb_users ON
-        tb_invoice.user_id = tb_users.id
-    LEFT JOIN tb_company ON
-        tb_invoice.company_id = tb_company.id
-    WHERE
-        tb_invoice.create_date BETWEEN $1 AND $2 AND
-        tb_invoice.status_invoice = $3 AND
-        tb_invoice.invoice_type_id = $4
-    ORDER BY tb_invoice.id DESC`;
-
-        client.query(sql, [
-            data.dateRange[0],
-            data.dateRange[1],
-            data.status,
-            data.type
-        ], function (err, res) {
+        var sql = "SELECT " +
+            "tb_invoice.id AS billId, " +
+            "tb_customer.deceased_name AS deceased, " +
+            "tb_customer.contact_person AS contact, " +
+            "tb_customer.customer_address AS address, " +
+            "tb_customer.mobile_no AS phone, " +
+            "tb_customer.receive_from AS receive, " +
+            "tb_invoice.receive_date AS receiveDate, " +
+            "tb_invoice.receive_time AS receiveTime, " +
+            "tb_customer.send, " +
+            "company_id, " +
+            "company_name, " +
+            "tb_invoice.donate, " +
+            "tb_invoice.issue_date AS issueDate, " +
+            "tb_invoice.issue_time AS issueTime, " +
+            "bill_number AS billNo, " +
+            "volume_no AS bookNo, " +
+            "user_id, " +
+            "tb_users.firstname || ' ' || tb_users.lastname AS billUser, " +
+            "payment_id, " +
+            "tb_mas_payment.payment_name AS paymentName, " +
+            "total, " +
+            "net_balance AS remaining, " +
+            "deposit, " +
+            "pay_extra AS payExtra, " +
+            "price_after_discount AS priceAfterDiscount, " +
+            "(total - price_after_discount) AS discount, " +
+            "status_invoice AS status, " +
+            "tb_invoice.create_date AS billDate, " +
+            "note, " +
+            "remark " +
+            "FROM " +
+            "tb_invoice " +
+            "LEFT JOIN tb_customer ON " +
+            "tb_invoice.id = tb_customer.invoice_id " +
+            "LEFT JOIN tb_mas_invoice_type ON " +
+            "tb_invoice.invoice_type_id = tb_mas_invoice_type.id " +
+            "LEFT JOIN tb_mas_payment ON " +
+            "tb_invoice.payment_id = tb_mas_payment.id " +
+            "LEFT JOIN tb_users ON " +
+            "tb_invoice.user_id = tb_users.id " +
+            "LEFT JOIN tb_company ON " +
+            "tb_invoice.company_id = tb_company.id " +
+            "WHERE " +
+            "tb_invoice.active_flag = 'Y' ";
+        let params = [];
+        let paramIndex = 1;
+        if (data?.dateRange) {
+            sql += "AND tb_invoice.create_date BETWEEN $" + (paramIndex++) + " AND $" + (paramIndex++) + "  ";
+            params.push(data.dateRange[0], data.dateRange[1]);
+        }
+        if (data?.status) {
+            sql += "AND tb_invoice.status_invoice = $" + (paramIndex++) + "  ";
+            params.push(data.status);
+        }
+        if (data?.type) {
+            sql += "AND tb_invoice.invoice_type_id = $" + (paramIndex++) + "  ";
+            params.push(data.type);
+        }
+        sql += "ORDER BY tb_invoice.id DESC";
+        client.query(sql, params, function (err, res) {
             if (err) {
                 const require = {
                     data: [],

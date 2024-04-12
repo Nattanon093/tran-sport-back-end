@@ -173,14 +173,7 @@ Task.getBillByBillNo = function getBillByBillNo(data, result) {
 }
 
 Task.searchBill = function searchBill(data, result) {
-    console.log('data :', data);
     return new Promise(function (resolve, reject) {
-        // where หา วันที่นี้ ถึง วันที่นี้ หา สถานะ ที่เลือก และ ประเภทที่เลือก
-        // data : {
-        //     dateRange: [ '2024-03-31T17:00:00.000Z', '2024-04-29T17:00:00.000Z' ],
-        //     status: '1',
-        //     type: '1'
-        //   }
         var sql = `SELECT
         tb_invoice.id AS billId,
         tb_customer.deceased_name AS deceased,

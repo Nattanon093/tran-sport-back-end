@@ -48,6 +48,15 @@ Task.getBillByBillNo = async function getBillByBillNo(data, result) {
     }
 }
 
+Task.searchBill = async function searchBill(data, result) {
+    try {
+        var response = await BillModel.searchBill(data);
+        result(response);
+    } catch (error) {
+        result(error);
+    }
+};
+
 Task.getBillByCustomer = async function getBillByCustomer(data, result) {
     try {
         var response = await BillModel.getBillByCustomer(data);

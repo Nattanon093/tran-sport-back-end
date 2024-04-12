@@ -46,6 +46,19 @@ module.exports = function (app) {
         });
     });
     
+    // searchBill
+    app.post(`${key}/bill/searchBill`, function (req, res) {
+        BillController.searchBill(req.body, function (err, task) {
+            try {
+                if (err) {
+                    return res.send(err);
+                }
+                return res.send(task);
+            } catch (error) {
+                return res.send(error);
+            }
+        });
+    });
 
     // getBillByCustomer
     app.get(`${key}/bill/getBillByCustomer`, function (req, res) {

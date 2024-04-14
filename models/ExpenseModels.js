@@ -101,11 +101,24 @@ Task.searchExpense = function searchExpense(data, result) {
   where te.active_flag = 'Y' `;
 
     let params = [];
+    let paramIndex = 1;
 
-    console.log('data, ', data);
+    console.log("data, ", data);
+
+    if (data?.dateRange) {
+
+      // check same date
+      if (data.dateRange[0] === data.dateRange[1]) {
+        sql += `and te.update_date between $${paramIndex++} and $${paramIndex++} `;
+        params.push(data.dateRange[0].split("T")[0], data.dateRange[1]);
+      } else {
+        sql += `and te.update_date between $${paramIndex++} and $${paramIndex++} `;
+        params.push(data.dateRange[0], data.dateRange[1]);
+      }
+    }
 
     if (data?.type) {
-      sql += `and te.expense_type_id = $1 `;
+      sql += `and te.expense_type_id = $${paramIndex++} `;
       params.push(data.type);
     }
 

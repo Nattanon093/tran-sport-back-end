@@ -13,6 +13,15 @@ Task.getCheque = async function getCheque(data, result) {
   }
 };
 
+Task.searchCheque = async function searchCheque(data, result) {
+  try {
+    var response = await ChequeModel.searchCheque(data);
+    result(response);
+  } catch (error) {
+    result(error);
+  }
+};
+
 Task.createCheque = async function createCheque(data, result) {
   try {
     var issueDate = data.issueDate.split("/");

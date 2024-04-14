@@ -230,7 +230,7 @@ Task.searchBill = function searchBill(data, result) {
             params.push(data.status);
         }
         if (data?.type) {
-            sql += "AND tb_invoice.invoice_type_id = $" + (paramIndex++) + "  ";
+            sql += "AND tb_mas_payment.id = $" + (paramIndex++) + "  ";
             params.push(data.type);
         }
         sql += "ORDER BY tb_invoice.id DESC";

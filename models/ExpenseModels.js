@@ -45,7 +45,7 @@ order by te.update_date desc`;
 };
 
 Task.getExpenseById = function getExpenseById(data, result) {
-  console.log('getExpenseById : ',data);
+  console.log("getExpenseById : ", data);
 
   return new Promise(function (resolve, reject) {
     var sql = `select
@@ -60,6 +60,60 @@ Task.getExpenseById = function getExpenseById(data, result) {
   where te.active_flag = 'Y' and te.id = $1`;
 
     client.query(sql, [data.id], function (err, res) {
+      console.log(res);
+      if (err) {
+        const require = {
+          data: [],
+          error: err,
+          query_result: false,
+        };
+        reject(require);
+      } else {
+        const require = {
+          data: res.rows,
+          error: err,
+          query_result: true,
+        };
+        resolve(require);
+      }
+    });
+    client.end;
+  });
+};
+
+Task.searchExpense = function searchExpense(data, result) {
+  return new Promise(function (resolve, reject) {
+    var sql = `select
+    te.id,
+    te.expense_name,
+    te.amount,
+    te.remark,
+    te.expense_type_id,
+    tmet.expense_type_name,
+    te.create_by,
+    te.create_date,
+    te.update_by,
+    te.update_date,
+    te.active_flag
+  from
+    tb_expense te
+  left join tb_mas_expense_type tmet on tmet.id = te.expense_type_id and tmet.active_flag = 'Y'
+  where te.active_flag = 'Y' `;
+
+    let params = [];
+
+    console.log('data, ', data);
+
+    if (data?.type) {
+      sql += `and te.expense_type_id = $1 `;
+      params.push(data.type);
+    }
+
+    sql += `order by te.update_date desc`;
+
+    console.log("sql :", sql);
+
+    client.query(sql, params, function (err, res) {
       console.log(res);
       if (err) {
         const require = {

@@ -22,6 +22,15 @@ Task.getExpense = async function getExpense(data, result) {
     }
   };
 
+  Task.searchExpense = async function searchExpense(data, result) {
+    try {
+      var response = await ExpenseModel.searchExpense(data);
+      result(response);
+    } catch (error) {
+      result(error);
+    }
+  };
+
   Task.createExpense = async function createExpense(data, result) {
     try {
       var response = await ExpenseModel.createExpense(data);

@@ -152,7 +152,7 @@ Task.getMasterExpenseType = function (req, result) {
   return new Promise(function (resolve, reject) {
     var sql = `select
     id,
-    expense_type_name,
+    expense_type_name as name,
     active_flag
   from
     tb_mas_expense_type

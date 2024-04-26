@@ -1,12 +1,11 @@
-var UsersController = require('../controllers/UsersController');
-var users_model = require('../models/UsersModels');
+var RoutesController = require('../controllers/RoutesController');
+var routes_model = require('../models/RoutesModel');
 
 module.exports = function (app) {
     const key = '/api/v1';
 
-    // getUsers
-    app.get(`${key}/users/getUsers`, function (req, res) {
-        UsersController.getUsers(req.body, function (err, task) {
+    app.get(`${key}/getProvinceAndDistrictAndSubDistrict`, function (req, res) {
+        RoutesController.getProvinceAndDistrictAndSubDistrict(req.body, function (err, task) {
             try {
                 if (err) {
                     return res.send(err);
@@ -18,9 +17,8 @@ module.exports = function (app) {
         });
     });
 
-    // getUsersByUserId
-    app.get(`${key}/users/getUsersByUserId`, function (req, res) {
-        UsersController.getUsersByUserId(req.body, function (err, task) {
+    app.post(`${key}/getDeliveryService`, function (req, res) {
+        RoutesController.getDeliveryService(req.body, function (err, task) {
             try {
                 if (err) {
                     return res.send(err);

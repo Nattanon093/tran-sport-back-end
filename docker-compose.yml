@@ -1,7 +1,6 @@
 networks:
   api:
     external: true
-    driver: bridge
 
 services:
   trans-port:

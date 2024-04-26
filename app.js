@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
-const port = process.env.PORT || 5432;
+const port = process.env.PORT || 9981;
 
 var publicDir = require("path").join(__dirname, "/public/");
 app.use(express.static(publicDir));

@@ -43,28 +43,37 @@ Task.getDeliveryService = function getDeliveryService(data, result) {
                 if (err) {
                     reject(err);
                 }
-                let sql = `SELECT mas_t.transport_name, mas_img_t.img_url ,mas_t.parcel_pickup_point, sp.price, dt.delivery_time
-                FROM tb_mas_distances distances
-                INNER JOIN tb_mas_transport mas_t ON distances.transport_id = mas_t.id
-                INNER JOIN tb_mas_img_transport mas_img_t ON mas_t.id = mas_img_t.transport_id
-                INNER JOIN tb_parcel_size mas_ps ON mas_t.id = mas_ps.transport_id
-                INNER JOIN tb_shipping_price sp ON mas_ps.shipping_price_id = sp.id 
-                INNER JOIN tb_delivery_time dt ON distances.delivery_time_id = dt.id
-                WHERE distances.from_subdistrict_id = $1 AND distances.to_subdistrict_id = $2
-                AND mas_ps.height >= $3 AND mas_ps.long >= $4 AND mas_ps.width >= $5 AND mas_ps.weight >= $6
-                ORDER BY sp.price ASC`;
-                let values = [res.rows[0].from_subdistrict_id, res.rows[0].to_subdistrict_id, dataParcel.height, dataParcel.length, dataParcel.width, dataParcel.weight];
-                client.query(sql, values, function (err, res) {
-                    try {
-                        if (err) {
-                            reject(err);
+                if (!res || !res.rows || res.rows.length === 0) {
+                    reject(new Error('No results returned from the query'));
+                } else {
+                    let sql = `SELECT DISTINCT ON (mas_t.transport_name) mas_t.transport_name, mas_img_t.img_url, mas_t.parcel_pickup_point, sp.price, dt.delivery_time
+                    FROM tb_mas_distances distances
+                    LEFT JOIN tb_mas_transport mas_t ON distances.transport_id = mas_t.id
+                    LEFT JOIN tb_mas_img_transport mas_img_t ON mas_t.id = mas_img_t.transport_id
+                    LEFT JOIN tb_parcel_size mas_ps ON mas_t.id = mas_ps.transport_id
+                    LEFT JOIN tb_shipping_price sp ON mas_ps.shipping_price_id = sp.id 
+                    LEFT JOIN tb_delivery_time dt ON distances.delivery_time_id = dt.id
+                    WHERE distances.from_subdistrict_id = $1 AND distances.to_subdistrict_id = $2
+                    AND mas_ps.height >= $3 AND mas_ps.long >= $4 AND mas_ps.width >= $5 AND mas_ps.weight >= $6
+                    ORDER BY mas_t.transport_name, sp.price ASC`;
+                    let values = [res.rows[0].from_subdistrict_id, res.rows[0].to_subdistrict_id, dataParcel.height, dataParcel.length, dataParcel.width, dataParcel.weight];
+                    client.query(sql, values, function (err, res) {
+                        try {
+                            if (err) {
+                                console.log('err :', err);
+                                reject(err);
+                            }
+                            if (!res || !res.rows || res.rows.length === 0) {
+                                reject(new Error('No results returned from the query'));
+                            } else {
+                                resolve(res.rows);
+                            }
+                        } catch (error) {
+                            console.log('error :', error);
+                            reject(error);
                         }
-                        resolve(res.rows);
-                    } catch (error) {
-                        console.log('error :', error);
-                        reject(error);
-                    }
-                });
+                    });
+                }
             } catch (error) {
                 console.log('error :', error);
                 reject(error);

@@ -2,8 +2,8 @@ const internal = {};
 
 export default internal.Global =  class {
     constructor() { 
-        this.SERVER_URL = 'https://api.bsdeliverymarket.com' 
-        this.CLIENT_URL = 'https://bsdeliverymarket.com'
+        this.SERVER_URL = 'https://api.bsdeliverymarkets.com' 
+        this.CLIENT_URL = 'https://bsdeliverymarkets.com'
     } 
  
      getServerUrl(){

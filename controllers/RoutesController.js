@@ -22,5 +22,13 @@ Task.getDeliveryService = async function getDeliveryService(data, result) {
     }
 };
 
+Task.getParcelBoxSize = async function getParcelBoxSize(data, result) {
+    try {
+        var response = await RoutesModel.getParcelBoxSize(data);
+        result(response);
+    } catch (error) {
+        result(error);
+    }
+}
 
 module.exports = Task;

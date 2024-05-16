@@ -33,11 +33,11 @@ Task.getDeliveryService = function getDeliveryService(data, result) {
     let dataParcel = data[0].parcel;
     return new Promise(function (resolve, reject) {
         let sql = `SELECT
-        from_subdistrict.id as from_subdistrict_id,
-        to_subdistrict.id as to_subdistrict_id
-        FROM tb_mas_subdistrict from_subdistrict 
-        INNER JOIN tb_mas_subdistrict to_subdistrict ON from_subdistrict.name_th = $1 AND to_subdistrict.name_th = $2`;
-        let values = [dataFrom.sub_district, dataTo.sub_district];
+        from_province.id as from_province_id,
+        to_province.id as to_province_id
+        FROM tb_mas_province from_province
+        INNER JOIN tb_mas_province to_province ON from_province.name_th = $1 AND to_province.name_th = $2`;
+        let values = [dataFrom.province, dataTo.province];
         client.query(sql, values, function (err, res) {
             try {
                 if (err) {
@@ -46,18 +46,59 @@ Task.getDeliveryService = function getDeliveryService(data, result) {
                 if (!res || !res.rows || res.rows.length === 0) {
                     reject(new Error('No results returned from the query'));
                 } else {
-                    let sql = `SELECT DISTINCT ON (mas_t.transport_name) mas_t.transport_name, mas_img_t.img_url, mas_t.parcel_pickup_point, sp.price, dt.delivery_time
-                    FROM tb_mas_distances distances
-                    LEFT JOIN tb_mas_transport mas_t ON distances.transport_id = mas_t.id
-                    LEFT JOIN tb_mas_img_transport mas_img_t ON mas_t.id = mas_img_t.transport_id
-                    LEFT JOIN tb_parcel_size mas_ps ON mas_t.id = mas_ps.transport_id
-                    LEFT JOIN tb_shipping_price sp ON mas_ps.shipping_price_id = sp.id 
-                    LEFT JOIN tb_delivery_time dt ON distances.delivery_time_id = dt.id
-                    WHERE distances.from_subdistrict_id = $1 AND distances.to_subdistrict_id = $2
-                    AND mas_ps.height >= $3 AND mas_ps.long >= $4 AND mas_ps.width >= $5 AND mas_ps.weight >= $6
-                    ORDER BY mas_t.transport_name, sp.price ASC`;
-                    let values = [res.rows[0].from_subdistrict_id, res.rows[0].to_subdistrict_id, dataParcel.height, dataParcel.length, dataParcel.width, dataParcel.weight];
-                    client.query(sql, values, function (err, res) {
+                    let valuesPackageSize = [];
+                    let query = "SELECT \n" +
+                        "transportation_type.type_name, \n" +
+                        "transportation_img.img_url, \n" +
+                        "transportation_type_package_size.rate_bangkok_metro, \n" +
+                        "transportation_type_package_size.rate_bangkok_metro_to_other_provinces \n" +
+                        "FROM \n" +
+                        "transportation_rate " +
+                        "INNER JOIN transportation_type on \n" +
+                        "transportation_rate.transportation_type_id = transportation_type.id \n" +
+                        "INNER JOIN  transportation_img on \n" +
+                        "transportation_type.transportation_img_id = transportation_img.id \n" +
+                        "INNER JOIN  transportation_type_package_size on \n" +
+                        "transportation_type.id = transportation_type_package_size.transportation_type_id \n" +
+                        "INNER JOIN  package_size on \n" +
+                        "transportation_type_package_size.package_size_id = package_size.id \n";
+
+                    query += " WHERE 1=1 \n";
+
+                    if (dataParcel.width) {
+                        query += " AND package_size.width >= ? \n";
+                        valuesPackageSize.push(dataParcel.width);
+                    }
+                    if (dataParcel.length) {
+                        query += " AND package_size.length >= ? \n";
+                        valuesPackageSize.push(dataParcel.length);
+                    }
+                    if (dataParcel.height) {
+                        query += " AND package_size.height >= ? \n";
+                        valuesPackageSize.push(dataParcel.height);
+                    }
+                    if (dataParcel.id) {
+                        query += " AND package_size.id = $1 \n";
+                        valuesPackageSize.push(dataParcel.id);
+                    }
+                    if (dataParcel.weight) {
+                        query += " AND package_size.weight >= $2 \n";
+                        valuesPackageSize.push(dataParcel.weight);
+                    }
+
+                    if (!dataParcel.width && !dataParcel.length && !dataParcel.height && !dataParcel.id && !dataParcel.weight) {
+                        query += " AND 1=1";
+                    }
+
+                    query += " GROUP BY " +
+                        "transportation_type.type_name, \n" +
+                        "transportation_img.img_url, \n" +
+                        "transportation_type_package_size.rate_bangkok_metro, \n" +
+                        "transportation_type_package_size.rate_bangkok_metro_to_other_provinces";
+
+                    console.log('query :', query);
+                    console.log('values :', valuesPackageSize);
+                    client.query(query, valuesPackageSize, function (err, res) {
                         try {
                             if (err) {
                                 console.log('err :', err);
@@ -66,6 +107,10 @@ Task.getDeliveryService = function getDeliveryService(data, result) {
                             if (!res || !res.rows || res.rows.length === 0) {
                                 reject(new Error('No results returned from the query'));
                             } else {
+                                console.log('data :', res.rows);
+                                // log from_province_id and to_province_id
+                                console.log('from_province_id :', data[0].from_province_id);
+                                console.log('to_province_id :', data[0].to_province_id);
                                 resolve(res.rows);
                             }
                         } catch (error) {
@@ -79,6 +124,26 @@ Task.getDeliveryService = function getDeliveryService(data, result) {
                 reject(error);
             }
         });
+    });
+}
+
+Task.getParcelBoxSize = function getParcelBoxSize(data, result) {
+    return new Promise(function (resolve, reject) {
+        let sql = `SELECT 
+        id,
+        size_name
+        FROM package_size`;
+        client.query(sql, function (err, res) {
+            try {
+                if (err) {
+                    reject(err);
+                }
+                resolve(res.rows);
+            } catch (error) {
+                reject(error);
+            }
+        });
+        client.end;
     });
 }
 

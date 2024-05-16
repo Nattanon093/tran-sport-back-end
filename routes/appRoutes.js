@@ -29,4 +29,17 @@ module.exports = function (app) {
             }
         });
     });
+
+    app.get(`${key}/getParcelBoxSize`, function (req, res) {
+        RoutesController.getParcelBoxSize(req.body, function (err, task) {
+            try {
+                if (err) {
+                    return res.send(err);
+                }
+                return res.send(task);
+            } catch (error) {
+                return res.send(error);
+            }
+        });
+    });
 }

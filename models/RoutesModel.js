@@ -46,6 +46,7 @@ Task.getDeliveryService = function getDeliveryService(data, result) {
                 if (!res || !res.rows || res.rows.length === 0) {
                     reject(new Error('No results returned from the query'));
                 } else {
+                    let dataProvince = res.rows;
                     let valuesPackageSize = [];
                     let query = "SELECT \n" +
                         "transportation_type.type_name, \n" +
@@ -90,14 +91,13 @@ Task.getDeliveryService = function getDeliveryService(data, result) {
                         query += " AND 1=1";
                     }
 
+                    query += " AND transportation_type_package_size.is_active = true \n";
+
                     query += " GROUP BY " +
                         "transportation_type.type_name, \n" +
                         "transportation_img.img_url, \n" +
                         "transportation_type_package_size.rate_bangkok_metro, \n" +
                         "transportation_type_package_size.rate_bangkok_metro_to_other_provinces";
-
-                    console.log('query :', query);
-                    console.log('values :', valuesPackageSize);
                     client.query(query, valuesPackageSize, function (err, res) {
                         try {
                             if (err) {
@@ -107,11 +107,56 @@ Task.getDeliveryService = function getDeliveryService(data, result) {
                             if (!res || !res.rows || res.rows.length === 0) {
                                 reject(new Error('No results returned from the query'));
                             } else {
-                                console.log('data :', res.rows);
-                                // log from_province_id and to_province_id
-                                console.log('from_province_id :', data[0].from_province_id);
-                                console.log('to_province_id :', data[0].to_province_id);
-                                resolve(res.rows);
+                                let dataTransportation = res.rows;
+                                let isBangkokMetro = false;
+                                let isOtherProvinces = false;
+                                let dataDeliveryService = [];
+
+
+                                let sql = `SELECT
+                                from_province.id as from_province_id,
+                                to_province.id as to_province_id,
+                                mst_within_bangkok_metro.destination_province_id AS bangkok_metro,
+                                mst_from_bangkok_metro_to_other_provinces.destination_province_id AS other_provinces
+                                FROM tb_mas_province from_province
+                                INNER JOIN tb_mas_province to_province ON from_province.id = $1 AND to_province.id = $2
+                                LEFT JOIN mst_within_bangkok_metro ON from_province.id = mst_within_bangkok_metro.destination_province_id AND to_province.id = mst_within_bangkok_metro.destination_province_id
+                                LEFT JOIN mst_from_bangkok_metro_to_other_provinces ON from_province.id = mst_from_bangkok_metro_to_other_provinces.destination_province_id AND to_province.id = mst_from_bangkok_metro_to_other_provinces.destination_province_id`;
+                                let values = [dataProvince[0].to_province_id, dataProvince[0].to_province_id];
+                                client.query(sql, values, function (err, res) {
+                                    try {
+                                        if (err) {
+                                            console.log('err :', err);
+                                            reject(err);
+                                        }
+                                        if (!res || !res.rows || res.rows.length === 0) {
+                                            reject(new Error('No results returned from the query'));
+                                        } else {
+                                            isBangkokMetro = res.rows[0].bangkok_metro ? true : false;
+                                            isOtherProvinces = res.rows[0].other_provinces ? true : false;
+
+                                            for (let i = 0; i < dataTransportation.length; i++) {
+                                                let data = dataTransportation[i];
+                                                let rate = 0;
+                                                if (isBangkokMetro) {
+                                                    rate = data.rate_bangkok_metro;
+                                                } else if (isOtherProvinces) {
+                                                    rate = data.rate_bangkok_metro_to_other_provinces;
+                                                }
+                                                dataDeliveryService.push({
+                                                    type_name: data.type_name,
+                                                    img_url: data.img_url,
+                                                    rate: rate
+                                                });
+                                            }
+                                            dataDeliveryService.sort((a, b) => (a.rate > b.rate) ? 1 : -1);
+                                            resolve(dataDeliveryService.length > 0 ? dataDeliveryService : res.rows);
+                                        }
+                                    } catch (error) {
+                                        console.log('error :', error);
+                                        reject(error);
+                                    }
+                                });
                             }
                         } catch (error) {
                             console.log('error :', error);

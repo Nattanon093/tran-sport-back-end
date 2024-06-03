@@ -50,6 +50,8 @@ Task.getDeliveryService = function getDeliveryService(data, result) {
                     let valuesPackageSize = [];
                     let query = "SELECT \n" +
                         "transportation_type.type_name, \n" +
+                        "transportation_type.parcel_pickup_point, \n" +
+                        "transportation_type.delivery_time, \n" +
                         "transportation_img.img_url, \n" +
                         "transportation_type_package_size.rate_bangkok_metro, \n" +
                         "transportation_type_package_size.rate_bangkok_metro_to_other_provinces \n" +
@@ -61,29 +63,29 @@ Task.getDeliveryService = function getDeliveryService(data, result) {
                         "transportation_type.transportation_img_id = transportation_img.id \n" +
                         "INNER JOIN  transportation_type_package_size on \n" +
                         "transportation_type.id = transportation_type_package_size.transportation_type_id \n" +
-                        "INNER JOIN  package_size on \n" +
-                        "transportation_type_package_size.package_size_id = package_size.id \n";
+                        "INNER JOIN weigth on \n" +
+                        "transportation_type_package_size.weigth_id = weigth.id \n";
 
                     query += " WHERE 1=1 \n";
 
-                    if (dataParcel.width) {
-                        query += " AND package_size.width >= ? \n";
-                        valuesPackageSize.push(dataParcel.width);
-                    }
-                    if (dataParcel.length) {
-                        query += " AND package_size.length >= ? \n";
-                        valuesPackageSize.push(dataParcel.length);
-                    }
-                    if (dataParcel.height) {
-                        query += " AND package_size.height >= ? \n";
-                        valuesPackageSize.push(dataParcel.height);
-                    }
-                    if (dataParcel.id) {
-                        query += " AND package_size.id = $1 \n";
-                        valuesPackageSize.push(dataParcel.id);
-                    }
+                    // if (dataParcel.width) {
+                    //     query += " AND package_size.width >= ? \n";
+                    //     valuesPackageSize.push(dataParcel.width);
+                    // }
+                    // if (dataParcel.length) {
+                    //     query += " AND package_size.length >= ? \n";
+                    //     valuesPackageSize.push(dataParcel.length);
+                    // }
+                    // if (dataParcel.height) {
+                    //     query += " AND package_size.height >= ? \n";
+                    //     valuesPackageSize.push(dataParcel.height);
+                    // }
+                    // if (dataParcel.id) {
+                    //     query += " AND package_size.id = $1 \n";
+                    //     valuesPackageSize.push(dataParcel.id);
+                    // }
                     if (dataParcel.weight) {
-                        query += " AND package_size.weight >= $2 \n";
+                        query += " AND weigth.weigth = $1 \n";
                         valuesPackageSize.push(dataParcel.weight);
                     }
 
@@ -95,6 +97,8 @@ Task.getDeliveryService = function getDeliveryService(data, result) {
 
                     query += " GROUP BY " +
                         "transportation_type.type_name, \n" +
+                        "transportation_type.parcel_pickup_point, \n" +
+                        "transportation_type.delivery_time, \n" +
                         "transportation_img.img_url, \n" +
                         "transportation_type_package_size.rate_bangkok_metro, \n" +
                         "transportation_type_package_size.rate_bangkok_metro_to_other_provinces";
@@ -145,6 +149,8 @@ Task.getDeliveryService = function getDeliveryService(data, result) {
                                                 }
                                                 dataDeliveryService.push({
                                                     type_name: data.type_name,
+                                                    parcel_pickup_point: data.parcel_pickup_point,
+                                                    delivery_time: data.delivery_time,
                                                     img_url: data.img_url,
                                                     rate: rate
                                                 });

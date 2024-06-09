@@ -31,4 +31,13 @@ Task.getParcelBoxSize = async function getParcelBoxSize(data, result) {
     }
 }
 
+Task.Tracking_CheckProvider = async function Tracking_CheckProvider(data, result) {
+    try {
+        var response = await RoutesModel.Tracking_CheckProvider(data);
+        result(response);
+    } catch (error) {
+        result(error);
+    }
+}
+
 module.exports = Task;

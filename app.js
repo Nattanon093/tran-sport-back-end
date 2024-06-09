@@ -1,5 +1,7 @@
 const express = require("express");
+const { createProxyMiddleware } = require('http-proxy-middleware');
 const app = express();
+
 const bodyParser = require("body-parser");
 const port = process.env.PORT || 9981;
 
@@ -27,6 +29,11 @@ app.use((req, res, next) => {
     next();
   }
 });
+
+app.use('/proxy', createProxyMiddleware({ 
+  target: 'http://bsxpress.co', 
+  changeOrigin: true 
+}));
 
 app.listen(port, () => {
   console.log("API Start server at port " + port + ".");

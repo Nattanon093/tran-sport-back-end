@@ -58,7 +58,7 @@ Task.getDeliveryService = function getDeliveryService(data, result) {
                     queryPackageSize += " WHERE 1=1 \n";
 
                     if (dataParcel.width && dataParcel.length && dataParcel.height) {
-                        let sum = dataParcel.width + dataParcel.length + dataParcel.height;
+                        let sum = (parseInt(dataParcel.width) + parseInt(dataParcel.length) + parseInt(dataParcel.height));
                         queryPackageSize += " AND package_size.total_dimension >= $1 \n";
                         values.push(sum);
                     }
@@ -66,7 +66,8 @@ Task.getDeliveryService = function getDeliveryService(data, result) {
                         queryPackageSize += " AND package_size.id = $1 \n";
                         values.push(dataParcel.package_size_id);
                     }
-                    console.log('queryPackageSize :', queryPackageSize);
+
+                    queryPackageSize += " ORDER BY package_size.total_dimension ASC";
                     client.query(queryPackageSize, values, function (errPackageSize, resPackageSize) {
                         try {
                             if (errPackageSize) {
@@ -75,7 +76,6 @@ Task.getDeliveryService = function getDeliveryService(data, result) {
                             if (!resPackageSize || !resPackageSize.rows || resPackageSize.rows.length === 0) {
                                 reject(new Error('No results returned from the query'));
                             } else {
-                                console.log('resPackageSize.rows :', resPackageSize.rows);
                                 let widthPackage = resPackageSize.rows[0].weight;
                                 let dataProvince = res.rows;
                                 let valuesPackageSize = [];
@@ -100,8 +100,6 @@ Task.getDeliveryService = function getDeliveryService(data, result) {
                                 query += " WHERE 1=1 \n";
 
                                 if (widthPackage && dataParcel.weight) {
-                                    console.log('widthPackage :', widthPackage);
-                                    console.log('dataParcel.weight :', dataParcel.weight);
                                     if (dataParcel.weight > widthPackage) {
                                         query += " AND weigth.weigth = $1 \n";
                                         valuesPackageSize.push(dataParcel.weight);
@@ -124,10 +122,7 @@ Task.getDeliveryService = function getDeliveryService(data, result) {
                                     "transportation_img.img_url, \n" +
                                     "transportation_type_package_size.rate_bangkok_metro, \n" +
                                     "transportation_type_package_size.rate_bangkok_metro_to_other_provinces";
-                                    console.log('query :', query);
                                 client.query(query, valuesPackageSize, function (err, res) {
-                                    console.log('err :', err);
-                                    console.log('res :', res);
                                     try {
                                         if (err) {
                                             console.log('err :', err);
